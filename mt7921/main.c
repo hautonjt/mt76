@@ -678,7 +678,7 @@ static void mt7921_configure_filter(struct ieee80211_hw *hw,
 static void mt7921_bss_info_changed(struct ieee80211_hw *hw,
 				    struct ieee80211_vif *vif,
 				    struct ieee80211_bss_conf *info,
-				    u64 changed)
+				    u32 changed)
 {
 	struct mt792x_phy *phy = mt792x_hw_phy(hw);
 	struct mt792x_dev *dev = mt792x_hw_dev(hw);

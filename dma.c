@@ -953,7 +953,7 @@ mt76_dma_init(struct mt76_dev *dev,
 	init_completion(&dev->mmio.wed_reset_complete);
 
 	mt76_for_each_q_rx(dev, i) {
-		netif_napi_add(&dev->napi_dev, &dev->napi[i], poll);
+		netif_napi_add(&dev->napi_dev, &dev->napi[i], poll, 64);
 		mt76_dma_rx_fill(dev, &dev->q_rx[i]);
 		napi_enable(&dev->napi[i]);
 	}

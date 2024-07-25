@@ -698,7 +698,7 @@ mt7925_get_rates_table(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 static void mt7925_bss_info_changed(struct ieee80211_hw *hw,
 				    struct ieee80211_vif *vif,
 				    struct ieee80211_bss_conf *info,
-				    u64 changed)
+				    u32 changed)
 {
 	struct mt76_vif *mvif = (struct mt76_vif *)vif->drv_priv;
 	struct mt792x_phy *phy = mt792x_hw_phy(hw);
@@ -1276,7 +1276,7 @@ mt7925_channel_switch_beacon(struct ieee80211_hw *hw,
 
 static int
 mt7925_conf_tx(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
-	       unsigned int link_id, u16 queue,
+	       u16 queue,
 	       const struct ieee80211_tx_queue_params *params)
 {
 	struct mt792x_vif *mvif = (struct mt792x_vif *)vif->drv_priv;
