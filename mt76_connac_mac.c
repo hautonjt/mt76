@@ -1112,7 +1112,7 @@ void mt76_connac2_tx_check_aggr(struct ieee80211_sta *sta, __le32 *txwi)
 	u32 val;
 
 	if (!sta ||
-	    !(sta->deflink.ht_cap.ht_supported || sta->deflink.he_cap.has_he))
+	    !(sta->ht_cap.ht_supported || sta->he_cap.has_he))
 		return;
 
 	tid = le32_get_bits(txwi[1], MT_TXD1_TID);

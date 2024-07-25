@@ -1232,10 +1232,10 @@ static int mt7915_sta_set_txpwr(struct ieee80211_hw *hw,
 {
 	struct mt7915_phy *phy = mt7915_hw_phy(hw);
 	struct mt7915_dev *dev = mt7915_hw_dev(hw);
-	s16 txpower = sta->deflink.txpwr.power;
+	s16 txpower = sta->txpwr.power;
 	int ret;
 
-	if (sta->deflink.txpwr.type == NL80211_TX_POWER_AUTOMATIC)
+	if (sta->txpwr.type == NL80211_TX_POWER_AUTOMATIC)
 		txpower = 0;
 
 	mutex_lock(&dev->mt76.mutex);
