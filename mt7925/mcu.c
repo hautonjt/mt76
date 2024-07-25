@@ -124,10 +124,8 @@ int mt7925_mcu_update_arp_filter(struct mt76_dev *dev,
 				 struct mt76_vif *vif,
 				 struct ieee80211_bss_conf *info)
 {
-	struct ieee80211_vif *mvif = container_of(info, struct ieee80211_vif,
-						  bss_conf);
 	struct sk_buff *skb;
-	int i, len = min_t(int, mvif->cfg.arp_addr_cnt,
+	int i, len = min_t(int, info->arp_addr_cnt,
 			   IEEE80211_BSS_ARP_ADDR_LIST_LEN);
 	struct {
 		struct {
@@ -153,7 +151,7 @@ int mt7925_mcu_update_arp_filter(struct mt76_dev *dev,
 
 	skb_put_data(skb, &req, sizeof(req));
 	for (i = 0; i < len; i++) {
-		skb_put_data(skb, &mvif->cfg.arp_addr_list[i], sizeof(__be32));
+		skb_put_data(skb, &info->arp_addr_list[i], sizeof(__be32));
 		skb_put_zero(skb, sizeof(__be32));
 	}
 
@@ -1268,7 +1266,7 @@ int mt7925_mcu_uni_bss_ps(struct mt792x_dev *dev, struct ieee80211_vif *vif)
 		.ps = {
 			.tag = cpu_to_le16(UNI_BSS_INFO_PS),
 			.len = cpu_to_le16(sizeof(struct ps_tlv)),
-			.ps_state = vif->cfg.ps ? 2 : 0,
+			.ps_state = vif->bss_conf.ps ? 2 : 0,
 		},
 	};
 

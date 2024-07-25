@@ -198,7 +198,7 @@ int mt76_connac_mcu_set_vif_ps(struct mt76_dev *dev, struct ieee80211_vif *vif)
 			      */
 	} req = {
 		.bss_idx = mvif->idx,
-		.ps_state = vif->cfg.ps ? 2 : 0,
+		.ps_state = vif->bss_conf.ps ? 2 : 0,
 	};
 
 	if (vif->type != NL80211_IFTYPE_STATION)
@@ -396,7 +396,7 @@ void mt76_connac_mcu_sta_basic_tlv(struct mt76_dev *dev, struct sk_buff *skb,
 		if (vif->type == NL80211_IFTYPE_STATION &&
 		    !is_zero_ether_addr(vif->bss_conf.bssid)) {
 			memcpy(basic->peer_addr, vif->bss_conf.bssid, ETH_ALEN);
-			basic->aid = cpu_to_le16(vif->cfg.aid);
+			basic->aid = cpu_to_le16(vif->bss_conf.aid);
 		} else {
 			eth_broadcast_addr(basic->peer_addr);
 		}
@@ -419,7 +419,7 @@ void mt76_connac_mcu_sta_basic_tlv(struct mt76_dev *dev, struct sk_buff *skb,
 		else
 			conn_type = CONNECTION_INFRA_AP;
 		basic->conn_type = cpu_to_le32(conn_type);
-		basic->aid = cpu_to_le16(vif->cfg.aid);
+		basic->aid = cpu_to_le16(vif->bss_conf.aid);
 		break;
 	case NL80211_IFTYPE_ADHOC:
 		basic->conn_type = cpu_to_le32(CONNECTION_IBSS_ADHOC);
@@ -563,7 +563,7 @@ void mt76_connac_mcu_wtbl_generic_tlv(struct mt76_dev *dev,
 
 	if (sta) {
 		if (vif->type == NL80211_IFTYPE_STATION)
-			generic->partial_aid = cpu_to_le16(vif->cfg.aid);
+			generic->partial_aid = cpu_to_le16(vif->bss_conf.aid);
 		else
 			generic->partial_aid = cpu_to_le16(sta->aid);
 		memcpy(generic->peer_addr, sta->addr, ETH_ALEN);
@@ -2204,10 +2204,8 @@ int mt76_connac_mcu_update_arp_filter(struct mt76_dev *dev,
 				      struct mt76_vif *vif,
 				      struct ieee80211_bss_conf *info)
 {
-	struct ieee80211_vif *mvif = container_of(info, struct ieee80211_vif,
-						  bss_conf);
 	struct sk_buff *skb;
-	int i, len = min_t(int, mvif->cfg.arp_addr_cnt,
+	int i, len = min_t(int, info -> arp_addr_cnt,
 			   IEEE80211_BSS_ARP_ADDR_LIST_LEN);
 	struct {
 		struct {
@@ -2235,7 +2233,7 @@ int mt76_connac_mcu_update_arp_filter(struct mt76_dev *dev,
 
 	skb_put_data(skb, &req_hdr, sizeof(req_hdr));
 	for (i = 0; i < len; i++)
-		skb_put_data(skb, &mvif->cfg.arp_addr_list[i], sizeof(__be32));
+		skb_put_data(skb, &info->arp_addr_list[i], sizeof(__be32));
 
 	return mt76_mcu_skb_send_msg(dev, skb, MCU_UNI_CMD(OFFLOAD), true);
 }

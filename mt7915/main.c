@@ -625,7 +625,7 @@ static void mt7915_bss_info_changed(struct ieee80211_hw *hw,
 	    vif->type == NL80211_IFTYPE_STATION)
 		set_bss_info = set_sta = !is_zero_ether_addr(info->bssid);
 	if (changed & BSS_CHANGED_ASSOC)
-		set_bss_info = vif->cfg.assoc;
+		set_bss_info = info->assoc;
 	if (changed & BSS_CHANGED_BEACON_ENABLED &&
 	    vif->type != NL80211_IFTYPE_AP)
 		set_bss_info = set_sta = info->enable_beacon;
