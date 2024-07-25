@@ -1168,7 +1168,6 @@ int mt7921_mcu_config_sniffer(struct mt792x_vif *vif,
 		[NL80211_CHAN_WIDTH_80P80] = 3,
 		[NL80211_CHAN_WIDTH_5] = 4,
 		[NL80211_CHAN_WIDTH_10] = 5,
-		[NL80211_CHAN_WIDTH_320] = 6,
 	};
 	struct {
 		struct {
