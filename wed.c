@@ -18,7 +18,7 @@ void mt76_wed_release_rx_buf(struct mtk_wed_device *wed)
 		if (!t || !t->ptr)
 			continue;
 
-		mt76_put_page_pool_buf(t->ptr, false);
+		skb_free_frag(t->ptr);
 		t->ptr = NULL;
 
 		mt76_put_rxwi(dev, t);
@@ -34,32 +34,45 @@ u32 mt76_wed_init_rx_buf(struct mtk_wed_device *wed, int size)
 	struct mt76_dev *dev = container_of(wed, struct mt76_dev, mmio.wed);
 	struct mtk_wed_bm_desc *desc = wed->rx_buf_ring.desc;
 	struct mt76_queue *q = &dev->q_rx[MT_RXQ_MAIN];
-	int i, len = SKB_WITH_OVERHEAD(q->buf_size);
+	int i;
+	u32 length = SKB_DATA_ALIGN(NET_SKB_PAD + wed->wlan.rx_size +
+				sizeof(struct skb_shared_info));
 	struct mt76_txwi_cache *t = NULL;
 
 	for (i = 0; i < size; i++) {
-		enum dma_data_direction dir;
-		dma_addr_t addr;
-		u32 offset;
+		struct mt76_txwi_cache *t = mt76_get_rxwi(&dev->mt76);
+		dma_addr_t phy_addr;
+		struct page *page;
 		int token;
-		void *buf;
+		void *ptr;
 
 		t = mt76_get_rxwi(dev);
 		if (!t)
 			goto unmap;
 
-		buf = mt76_get_page_pool_buf(q, &offset, q->buf_size);
-		if (!buf)
+		page = __dev_alloc_pages(GFP_KERNEL, get_order(length));
+		if (!page) {
+			mt76_put_rxwi(&dev->mt76, t);
 			goto unmap;
+		}
 
-		addr = page_pool_get_dma_addr(virt_to_head_page(buf)) + offset;
-		dir = page_pool_get_dma_dir(q->page_pool);
-		dma_sync_single_for_device(dev->dma_dev, addr, len, dir);
+		ptr = page_address(page);
+		phy_addr = dma_map_single(dev->mt76.dma_dev, ptr,
+					  wed->wlan.rx_size,
+					  DMA_TO_DEVICE);
+		if (unlikely(dma_mapping_error(dev->mt76.dev, phy_addr))) {
+			__free_pages(page, get_order(length));
+			mt76_put_rxwi(&dev->mt76, t);
+			goto unmap;
+		}
 
-		desc->buf0 = cpu_to_le32(addr);
-		token = mt76_rx_token_consume(dev, buf, t, addr);
+		desc->buf0 = cpu_to_le32(phy_addr);
+		token = mt76_rx_token_consume(dev, ptr, t, phy_addr);
 		if (token < 0) {
-			mt76_put_page_pool_buf(buf, false);
+			dma_unmap_single(dev->mt76.dma_dev, phy_addr,
+					 wed->wlan.rx_size, DMA_TO_DEVICE);
+			__free_pages(page, get_order(length));
+			mt76_put_rxwi(&dev->mt76, t);
 			goto unmap;
 		}
 
@@ -74,8 +87,6 @@ u32 mt76_wed_init_rx_buf(struct mtk_wed_device *wed, int size)
 	return 0;
 
 unmap:
-	if (t)
-		mt76_put_rxwi(dev, t);
 	mt76_wed_release_rx_buf(wed);
 
 	return -ENOMEM;
