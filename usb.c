@@ -355,7 +355,6 @@ mt76u_refill_rx(struct mt76_dev *dev, struct mt76_queue *q,
 		struct urb *urb, int nsgs, gfp_t gfp)
 {
 	enum mt76_rxq_id qid = q - &dev->q_rx[MT_RXQ_MAIN];
-	int offset;
 
 	if (qid == MT_RXQ_MAIN && dev->usb.sg_en)
 		return mt76u_fill_rx_sg(dev, q, urb, nsgs, gfp);
