@@ -33,11 +33,9 @@ u32 mt76_wed_init_rx_buf(struct mtk_wed_device *wed, int size)
 {
 	struct mt76_dev *dev = container_of(wed, struct mt76_dev, mmio.wed);
 	struct mtk_wed_bm_desc *desc = wed->rx_buf_ring.desc;
-	struct mt76_queue *q = &dev->q_rx[MT_RXQ_MAIN];
 	int i;
 	u32 length = SKB_DATA_ALIGN(NET_SKB_PAD + wed->wlan.rx_size +
 				sizeof(struct skb_shared_info));
-	struct mt76_txwi_cache *t = NULL;
 
 	for (i = 0; i < size; i++) {
 		struct mt76_txwi_cache *t = mt76_get_rxwi(dev);
