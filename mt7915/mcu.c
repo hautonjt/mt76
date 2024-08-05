@@ -2,6 +2,7 @@
 /* Copyright (C) 2020 MediaTek Inc. */
 
 #include <linux/fs.h>
+#include <linux/moduleparam.h>
 #include "mt7915.h"
 #include "mcu.h"
 #include "mac.h"
