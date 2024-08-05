@@ -1458,7 +1458,6 @@ mt7996_net_fill_forward_path(struct ieee80211_hw *hw,
 	path->mtk_wdma.queue = 0;
 	path->mtk_wdma.wcid = msta->wcid.idx;
 
-	path->mtk_wdma.amsdu = mtk_wed_is_amsdu_supported(wed);
 	ctx->dev = NULL;
 
 	return 0;
