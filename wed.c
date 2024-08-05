@@ -40,7 +40,7 @@ u32 mt76_wed_init_rx_buf(struct mtk_wed_device *wed, int size)
 	struct mt76_txwi_cache *t = NULL;
 
 	for (i = 0; i < size; i++) {
-		struct mt76_txwi_cache *t = mt76_get_rxwi(&dev);
+		struct mt76_txwi_cache *t = mt76_get_rxwi(dev);
 		dma_addr_t phy_addr;
 		struct page *page;
 		int token;
@@ -52,7 +52,7 @@ u32 mt76_wed_init_rx_buf(struct mtk_wed_device *wed, int size)
 
 		page = __dev_alloc_pages(GFP_KERNEL, get_order(length));
 		if (!page) {
-			mt76_put_rxwi(&dev, t);
+			mt76_put_rxwi(dev, t);
 			goto unmap;
 		}
 
@@ -62,7 +62,7 @@ u32 mt76_wed_init_rx_buf(struct mtk_wed_device *wed, int size)
 					  DMA_TO_DEVICE);
 		if (unlikely(dma_mapping_error(dev->dev, phy_addr))) {
 			__free_pages(page, get_order(length));
-			mt76_put_rxwi(&dev, t);
+			mt76_put_rxwi(dev, t);
 			goto unmap;
 		}
 
@@ -72,15 +72,12 @@ u32 mt76_wed_init_rx_buf(struct mtk_wed_device *wed, int size)
 			dma_unmap_single(dev->dma_dev, phy_addr,
 					 wed->wlan.rx_size, DMA_TO_DEVICE);
 			__free_pages(page, get_order(length));
-			mt76_put_rxwi(&dev, t);
+			mt76_put_rxwi(dev, t);
 			goto unmap;
 		}
 
-		token = FIELD_PREP(MT_DMA_CTL_TOKEN, token);
-#ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
-		token |= FIELD_PREP(MT_DMA_CTL_SDP0_H, addr >> 32);
-#endif
-		desc->token |= cpu_to_le32(token);
+		desc->token |= cpu_to_le32(FIELD_PREP(MT_DMA_CTL_TOKEN,
+						      token));
 		desc++;
 	}
 
