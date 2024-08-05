@@ -1417,7 +1417,7 @@ int mt7915_get_et_sset_count(struct ieee80211_hw *hw,
 	if (sset != ETH_SS_STATS)
 		return 0;
 
-	return MT7915_SSTATS_LEN + page_pool_ethtool_stats_get_count();
+	return MT7915_SSTATS_LEN;
 }
 
 static void mt7915_ethtool_worker(void *wi_data, struct ieee80211_sta *sta)
@@ -1560,7 +1560,7 @@ void mt7915_get_et_stats(struct ieee80211_hw *hw,
 
 	mt76_ethtool_page_pool_stats(&dev->mt76, &data[ei], &ei);
 
-	stats_size = MT7915_SSTATS_LEN + page_pool_ethtool_stats_get_count();
+	stats_size = MT7915_SSTATS_LEN;
 	if (ei != stats_size)
 		dev_err(dev->mt76.dev, "ei: %d size: %d", ei, stats_size);
 }
