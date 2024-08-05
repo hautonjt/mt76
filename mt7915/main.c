@@ -1407,7 +1407,6 @@ void mt7915_get_et_strings(struct ieee80211_hw *hw,
 
 	memcpy(data, mt7915_gstrings_stats, sizeof(mt7915_gstrings_stats));
 	data += sizeof(mt7915_gstrings_stats);
-	page_pool_ethtool_stats_get_strings(data);
 }
 
 static
