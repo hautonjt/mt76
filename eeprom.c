@@ -165,7 +165,7 @@ mt76_eeprom_override(struct mt76_phy *phy)
 	struct mt76_dev *dev = phy->dev;
 	struct device_node *np = dev->dev->of_node;
 
-	of_get_mac_address(np);
+	of_get_mac_address(np, phy->macaddr);
 
 	if (!is_valid_ether_addr(phy->macaddr)) {
 		eth_random_addr(phy->macaddr);
