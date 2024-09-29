@@ -74,6 +74,9 @@ enum mt76_wed_type {
 	MT76_WED_RRO_Q_IND,
 };
 
+struct mtk_wed_device {
+};
+
 struct mt76_bus_ops {
 	u32 (*rr)(struct mt76_dev *dev, u32 offset);
 	void (*wr)(struct mt76_dev *dev, u32 offset, u32 val);
@@ -224,7 +227,7 @@ struct mt76_queue {
 	u8 buf_offset;
 	u16 flags;
 
-	struct mtk_wed_device *wed;
+	void *wed;
 	u32 wed_regs;
 
 	dma_addr_t desc_dma;
@@ -1102,11 +1105,7 @@ void mt76_wed_dma_reset(struct mt76_dev *dev);
 int mt76_wed_net_setup_tc(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 			  struct net_device *netdev, enum tc_setup_type type,
 			  void *type_data);
-#ifdef CONFIG_NET_MEDIATEK_SOC_WED
-u32 mt76_wed_init_rx_buf(struct mtk_wed_device *wed, int size);
-int mt76_wed_offload_enable(struct mtk_wed_device *wed);
-int mt76_wed_dma_setup(struct mt76_dev *dev, struct mt76_queue *q, bool reset);
-#else
+
 static inline u32 mt76_wed_init_rx_buf(struct mtk_wed_device *wed, int size)
 {
 	return 0;
@@ -1122,7 +1121,6 @@ static inline int mt76_wed_dma_setup(struct mt76_dev *dev, struct mt76_queue *q,
 {
 	return 0;
 }
-#endif /* CONFIG_NET_MEDIATEK_SOC_WED */
 
 #define mt76xx_chip(dev) mt76_chip(&((dev)->mt76))
 #define mt76xx_rev(dev) mt76_rev(&((dev)->mt76))
