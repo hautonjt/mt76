@@ -49,6 +49,29 @@
 #define MT_WED_RRO_Q_MSDU_PG(_n)	__MT_WED_RRO_Q(MT76_WED_RRO_Q_MSDU_PG, _n)
 #define MT_WED_RRO_Q_IND	__MT_WED_RRO_Q(MT76_WED_RRO_Q_IND, 0)
 
+static inline bool mtk_wed_device_active(struct mtk_wed_device *dev)
+{
+	return false;
+}
+#define mtk_wed_device_detach(_dev) do {} while (0)
+#define mtk_wed_device_start(_dev, _mask) do {} while (0)
+#define mtk_wed_device_tx_ring_setup(_dev, _ring, _regs, _reset) -ENODEV
+#define mtk_wed_device_txfree_ring_setup(_dev, _ring, _regs) -ENODEV
+#define mtk_wed_device_reg_read(_dev, _reg) 0
+#define mtk_wed_device_reg_write(_dev, _reg, _val) do {} while (0)
+#define mtk_wed_device_irq_get(_dev, _mask) 0
+#define mtk_wed_device_irq_set_mask(_dev, _mask) do {} while (0)
+#define mtk_wed_device_rx_ring_setup(_dev, _ring, _regs, _reset) -ENODEV
+#define mtk_wed_device_ppe_check(_dev, _skb, _reason, _hash)  do {} while (0)
+#define mtk_wed_device_update_msg(_dev, _id, _msg, _len) -ENODEV
+#define mtk_wed_device_stop(_dev) do {} while (0)
+#define mtk_wed_device_dma_reset(_dev) do {} while (0)
+#define mtk_wed_device_setup_tc(_dev, _netdev, _type, _type_data) -EOPNOTSUPP
+#define mtk_wed_device_start_hw_rro(_dev, _mask, _reset) do {} while (0)
+#define mtk_wed_device_rro_rx_ring_setup(_dev, _ring, _regs) -ENODEV
+#define mtk_wed_device_msdu_pg_rx_ring_setup(_dev, _ring, _regs) -ENODEV
+#define mtk_wed_device_ind_rx_ring_setup(_dev, _regs) -ENODEV
+
 struct mt76_dev;
 struct mt76_phy;
 struct mt76_wcid;
@@ -1084,6 +1107,23 @@ bool ____mt76_poll_msec(struct mt76_dev *dev, u32 offset, u32 mask, u32 val,
 #define __mt76_poll_msec(...)         ____mt76_poll_msec(__VA_ARGS__, 10)
 #define mt76_poll_msec(dev, ...)      ____mt76_poll_msec(&((dev)->mt76), __VA_ARGS__, 10)
 #define mt76_poll_msec_tick(dev, ...) ____mt76_poll_msec(&((dev)->mt76), __VA_ARGS__)
+
+static inline int
+mtk_wed_device_attach(struct mtk_wed_device *dev)
+{
+	int ret = -ENODEV;
+	return ret;
+}
+
+static inline bool mtk_wed_get_rx_capa(struct mtk_wed_device *dev)
+{
+	return false;
+}
+
+static inline bool mtk_wed_is_amsdu_supported(struct mtk_wed_device *dev)
+{
+	return false;
+}
 
 void mt76_mmio_init(struct mt76_dev *dev, void __iomem *regs);
 void mt76_pci_disable_aspm(struct pci_dev *pdev);
