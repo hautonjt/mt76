@@ -377,28 +377,6 @@ mt7615_mcu_rx_csa_notify(struct mt7615_dev *dev, struct sk_buff *skb)
 }
 
 static void
-mt7615_mcu_rx_radar_detected(struct mt7615_dev *dev, struct sk_buff *skb)
-{
-	struct mt76_phy *mphy = &dev->mt76.phy;
-	struct mt7615_mcu_rdd_report *r;
-
-	r = (struct mt7615_mcu_rdd_report *)skb->data;
-
-	if (!dev->radar_pattern.n_pulses && !r->long_detected &&
-	    !r->constant_prf_detected && !r->staggered_prf_detected)
-		return;
-
-	if (r->band_idx && dev->mt76.phys[MT_BAND1])
-		mphy = dev->mt76.phys[MT_BAND1];
-
-	if (mt76_phy_dfs_state(mphy) < MT_DFS_STATE_CAC)
-		return;
-
-	ieee80211_radar_detected(mphy->hw);
-	dev->hw_pattern++;
-}
-
-static void
 mt7615_mcu_rx_log_message(struct mt7615_dev *dev, struct sk_buff *skb)
 {
 	struct mt7615_mcu_rxd *rxd = (struct mt7615_mcu_rxd *)skb->data;
@@ -427,9 +405,6 @@ mt7615_mcu_rx_ext_event(struct mt7615_dev *dev, struct sk_buff *skb)
 	struct mt7615_mcu_rxd *rxd = (struct mt7615_mcu_rxd *)skb->data;
 
 	switch (rxd->ext_eid) {
-	case MCU_EXT_EVENT_RDD_REPORT:
-		mt7615_mcu_rx_radar_detected(dev, skb);
-		break;
 	case MCU_EXT_EVENT_CSA_NOTIFY:
 		mt7615_mcu_rx_csa_notify(dev, skb);
 		break;

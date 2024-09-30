@@ -679,21 +679,19 @@ mt7915_vif_check_caps(struct mt7915_phy *phy, struct ieee80211_vif *vif)
 	struct mt7915_vif *mvif = (struct mt7915_vif *)vif->drv_priv;
 	struct mt7915_vif_cap *vc = &mvif->cap;
 
-	vc->ht_ldpc = vif->bss_conf.ht_ldpc;
-	vc->vht_ldpc = vif->bss_conf.vht_ldpc;
-	vc->vht_su_ebfer = vif->bss_conf.vht_su_beamformer;
-	vc->vht_su_ebfee = vif->bss_conf.vht_su_beamformee;
-	vc->vht_mu_ebfer = vif->bss_conf.vht_mu_beamformer;
-	vc->vht_mu_ebfee = vif->bss_conf.vht_mu_beamformee;
-	vc->he_ldpc = vif->bss_conf.he_ldpc;
-	vc->he_su_ebfer = vif->bss_conf.he_su_beamformer;
-	vc->he_su_ebfee = vif->bss_conf.he_su_beamformee;
-	vc->he_mu_ebfer = vif->bss_conf.he_mu_beamformer;
+	vc->vht_ldpc = mvif->cap.vht_ldpc;
+	vc->vht_su_ebfer = mvif->cap.vht_su_ebfer;
+	vc->vht_su_ebfee = mvif->cap.vht_su_ebfee;
+	vc->vht_mu_ebfer = mvif->cap.vht_mu_ebfer;
+	vc->vht_mu_ebfee = mvif->cap.vht_mu_ebfee;
+	vc->he_ldpc = mvif->cap.he_ldpc;
+	vc->he_su_ebfer = mvif->cap.he_su_ebfer;
+	vc->he_su_ebfee = mvif->cap.he_su_ebfee;
+	vc->he_mu_ebfer = mvif->cap.he_mu_ebfer;
 }
 
 static int
-mt7915_start_ap(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
-		struct ieee80211_bss_conf *link_conf)
+mt7915_start_ap(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
 {
 	struct mt7915_phy *phy = mt7915_hw_phy(hw);
 	struct mt7915_dev *dev = mt7915_hw_dev(hw);
@@ -714,8 +712,7 @@ out:
 }
 
 static void
-mt7915_stop_ap(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
-	       struct ieee80211_bss_conf *link_conf)
+mt7915_stop_ap(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
 {
 	struct mt7915_dev *dev = mt7915_hw_dev(hw);
 
@@ -1577,55 +1574,6 @@ mt7915_twt_teardown_request(struct ieee80211_hw *hw,
 	mutex_unlock(&dev->mt76.mutex);
 }
 
-static int
-mt7915_set_radar_background(struct ieee80211_hw *hw,
-			    struct cfg80211_chan_def *chandef)
-{
-	struct mt7915_phy *phy = mt7915_hw_phy(hw);
-	struct mt7915_dev *dev = phy->dev;
-	int ret = -EINVAL;
-	bool running;
-
-	mutex_lock(&dev->mt76.mutex);
-
-	if (dev->mt76.region == NL80211_DFS_UNSET)
-		goto out;
-
-	if (dev->rdd2_phy && dev->rdd2_phy != phy) {
-		/* rdd2 is already locked */
-		ret = -EBUSY;
-		goto out;
-	}
-
-	/* rdd2 already configured on a radar channel */
-	running = dev->rdd2_phy &&
-		  cfg80211_chandef_valid(&dev->rdd2_chandef) &&
-		  !!(dev->rdd2_chandef.chan->flags & IEEE80211_CHAN_RADAR);
-
-	if (!chandef || running ||
-	    !(chandef->chan->flags & IEEE80211_CHAN_RADAR)) {
-		ret = mt7915_mcu_rdd_background_enable(phy, NULL);
-		if (ret)
-			goto out;
-
-		if (!running)
-			goto update_phy;
-	}
-
-	ret = mt7915_mcu_rdd_background_enable(phy, chandef);
-	if (ret)
-		goto out;
-
-update_phy:
-	dev->rdd2_phy = chandef ? phy : NULL;
-	if (chandef)
-		dev->rdd2_chandef = *chandef;
-out:
-	mutex_unlock(&dev->mt76.mutex);
-
-	return ret;
-}
-
 const struct ieee80211_ops mt7915_ops = {
 	.tx = mt7915_tx,
 	.start = mt7915_start,
@@ -1675,5 +1623,4 @@ const struct ieee80211_ops mt7915_ops = {
 #ifdef CONFIG_MAC80211_DEBUGFS
 	.sta_add_debugfs = mt7915_sta_add_debugfs,
 #endif
-	.set_radar_background = mt7915_set_radar_background,
 };

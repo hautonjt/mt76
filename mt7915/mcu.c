@@ -275,30 +275,6 @@ mt7915_mcu_rx_thermal_notify(struct mt7915_dev *dev, struct sk_buff *skb)
 }
 
 static void
-mt7915_mcu_rx_radar_detected(struct mt7915_dev *dev, struct sk_buff *skb)
-{
-	struct mt76_phy *mphy = &dev->mt76.phy;
-	struct mt7915_mcu_rdd_report *r;
-
-	r = (struct mt7915_mcu_rdd_report *)skb->data;
-
-	if (r->band_idx > MT_RX_SEL2)
-		return;
-
-	if ((r->band_idx && !dev->phy.mt76->band_idx) &&
-	    dev->mt76.phys[MT_BAND1])
-		mphy = dev->mt76.phys[MT_BAND1];
-
-	if (r->band_idx == MT_RX_SEL2)
-		cfg80211_background_radar_event(mphy->hw->wiphy,
-						&dev->rdd2_chandef,
-						GFP_ATOMIC);
-	else
-		ieee80211_radar_detected(mphy->hw);
-	dev->hw_pattern++;
-}
-
-static void
 mt7915_mcu_rx_log_message(struct mt7915_dev *dev, struct sk_buff *skb)
 {
 	struct mt76_connac2_mcu_rxd *rxd;
@@ -329,7 +305,7 @@ mt7915_mcu_rx_log_message(struct mt7915_dev *dev, struct sk_buff *skb)
 static void
 mt7915_mcu_cca_finish(void *priv, u8 *mac, struct ieee80211_vif *vif)
 {
-	if (!vif->bss_conf.color_change_active || vif->type == NL80211_IFTYPE_STATION)
+	if (!vif->color_change_active || vif->type == NL80211_IFTYPE_STATION)
 		return;
 
 	ieee80211_color_change_finish(vif);
@@ -364,9 +340,6 @@ mt7915_mcu_rx_ext_event(struct mt7915_dev *dev, struct sk_buff *skb)
 	switch (rxd->ext_eid) {
 	case MCU_EXT_EVENT_THERMAL_PROTECT:
 		mt7915_mcu_rx_thermal_notify(dev, skb);
-		break;
-	case MCU_EXT_EVENT_RDD_REPORT:
-		mt7915_mcu_rx_radar_detected(dev, skb);
 		break;
 	case MCU_EXT_EVENT_CSA_NOTIFY:
 		mt7915_mcu_rx_csa_notify(dev, skb);
@@ -464,10 +437,10 @@ static bool mt7915_check_he_obss_narrow_bw_ru(struct ieee80211_hw *hw,
 		.tolerated = true,
 	};
 
-	if (!(vif->bss_conf.chanreq.oper.chan->flags & IEEE80211_CHAN_RADAR))
+	if (!(vif->bss_conf.chandef.chan->flags & IEEE80211_CHAN_RADAR))
 		return false;
 
-	cfg80211_bss_iter(hw->wiphy, &vif->bss_conf.chanreq.oper,
+	cfg80211_bss_iter(hw->wiphy, &vif->bss_conf.chandef,
 			  mt7915_check_he_obss_narrow_bw_ru_iter,
 			  &iter_data);
 
@@ -1809,7 +1782,7 @@ mt7915_mcu_beacon_cont(struct mt7915_dev *dev, struct ieee80211_vif *vif,
 
 		if (vif->csa_active)
 			cont->csa_ofs = cpu_to_le16(offset - 4);
-		if (vif->bss_conf.color_change_active)
+		if (vif->color_change_active)
 			cont->bcc_ofs = cpu_to_le16(offset - 3);
 	}
 

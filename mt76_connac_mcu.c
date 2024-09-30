@@ -811,7 +811,6 @@ mt76_connac_get_phy_mode_v2(struct mt76_phy *mphy, struct ieee80211_vif *vif,
 		ht_cap = &sband->ht_cap;
 		vht_cap = &sband->vht_cap;
 		he_cap = ieee80211_get_he_iftype_cap(sband, vif->type);
-		eht_cap = ieee80211_get_eht_iftype_cap(sband, vif->type);
 	}
 
 	if (band == NL80211_BAND_2GHZ) {
@@ -1361,24 +1360,6 @@ u8 mt76_connac_get_phy_mode_ext(struct mt76_phy *phy, struct ieee80211_vif *vif,
 		mode |= PHY_MODE_AX_6G;
 
 	sband = phy->hw->wiphy->bands[band];
-	eht_cap = ieee80211_get_eht_iftype_cap(sband, vif->type);
-
-	if (!eht_cap || !eht_cap->has_eht || !vif->bss_conf.eht_support)
-		return mode;
-
-	switch (band) {
-	case NL80211_BAND_6GHZ:
-		mode |= PHY_MODE_BE_6G;
-		break;
-	case NL80211_BAND_5GHZ:
-		mode |= PHY_MODE_BE_5G;
-		break;
-	case NL80211_BAND_2GHZ:
-		mode |= PHY_MODE_BE_24G;
-		break;
-	default:
-		break;
-	}
 
 	return mode;
 }
@@ -1398,18 +1379,6 @@ mt76_connac_get_he_phy_cap(struct mt76_phy *phy, struct ieee80211_vif *vif)
 	return ieee80211_get_he_iftype_cap(sband, vif->type);
 }
 EXPORT_SYMBOL_GPL(mt76_connac_get_he_phy_cap);
-
-const struct ieee80211_sta_eht_cap *
-mt76_connac_get_eht_phy_cap(struct mt76_phy *phy, struct ieee80211_vif *vif)
-{
-	enum nl80211_band band = phy->chandef.chan->band;
-	struct ieee80211_supported_band *sband;
-
-	sband = phy->hw->wiphy->bands[band];
-
-	return ieee80211_get_eht_iftype_cap(sband, vif->type);
-}
-EXPORT_SYMBOL_GPL(mt76_connac_get_eht_phy_cap);
 
 #define DEFAULT_HE_PE_DURATION		4
 #define DEFAULT_HE_DURATION_RTS_THRES	1023
@@ -2197,8 +2166,6 @@ int mt76_connac_mcu_update_arp_filter(struct mt76_dev *dev,
 				      struct mt76_vif *vif,
 				      struct ieee80211_bss_conf *info)
 {
-	struct ieee80211_vif *mvif = container_of(info, struct ieee80211_vif,
-						  bss_conf);
 	struct sk_buff *skb;
 	int i, len = min_t(int, info->arp_addr_cnt,
 			   IEEE80211_BSS_ARP_ADDR_LIST_LEN);

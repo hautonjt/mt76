@@ -345,37 +345,6 @@ mt7996_mcu_csa_finish(void *priv, u8 *mac, struct ieee80211_vif *vif)
 }
 
 static void
-mt7996_mcu_rx_radar_detected(struct mt7996_dev *dev, struct sk_buff *skb)
-{
-	struct mt76_phy *mphy = &dev->mt76.phy;
-	struct mt7996_mcu_rdd_report *r;
-
-	r = (struct mt7996_mcu_rdd_report *)skb->data;
-
-	if (r->band_idx >= ARRAY_SIZE(dev->mt76.phys))
-		return;
-
-	if (r->band_idx == MT_RX_SEL2 && !dev->rdd2_phy)
-		return;
-
-	if (r->band_idx == MT_RX_SEL2)
-		mphy = dev->rdd2_phy->mt76;
-	else
-		mphy = dev->mt76.phys[r->band_idx];
-
-	if (!mphy)
-		return;
-
-	if (r->band_idx == MT_RX_SEL2)
-		cfg80211_background_radar_event(mphy->hw->wiphy,
-						&dev->rdd2_chandef,
-						GFP_ATOMIC);
-	else
-		ieee80211_radar_detected(mphy->hw);
-	dev->hw_pattern++;
-}
-
-static void
 mt7996_mcu_rx_log_message(struct mt7996_dev *dev, struct sk_buff *skb)
 {
 #define UNI_EVENT_FW_LOG_FORMAT 0
@@ -418,7 +387,7 @@ out:
 static void
 mt7996_mcu_cca_finish(void *priv, u8 *mac, struct ieee80211_vif *vif)
 {
-	if (!vif->bss_conf.color_change_active || vif->type == NL80211_IFTYPE_STATION)
+	if (!vif->color_change_active || vif->type == NL80211_IFTYPE_STATION)
 		return;
 
 	ieee80211_color_change_finish(vif);
@@ -699,9 +668,6 @@ mt7996_mcu_uni_rx_unsolicited_event(struct mt7996_dev *dev, struct sk_buff *skb)
 		break;
 	case MCU_UNI_EVENT_IE_COUNTDOWN:
 		mt7996_mcu_ie_countdown(dev, skb);
-		break;
-	case MCU_UNI_EVENT_RDD_REPORT:
-		mt7996_mcu_rx_radar_detected(dev, skb);
 		break;
 	case MCU_UNI_EVENT_ALL_STA_INFO:
 		mt7996_mcu_rx_all_sta_info_event(dev, skb);
@@ -2329,7 +2295,7 @@ mt7996_mcu_beacon_cont(struct mt7996_dev *dev, struct ieee80211_vif *vif,
 
 		if (vif->csa_active)
 			bcn->csa_ie_pos = cpu_to_le16(offset - 4);
-		if (vif->bss_conf.color_change_active)
+		if (vif->color_change_active)
 			bcn->bcc_ie_pos = cpu_to_le16(offset - 3);
 	}
 
