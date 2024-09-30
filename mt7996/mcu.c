@@ -2313,59 +2313,6 @@ mt7996_mcu_beacon_cntdwn(struct ieee80211_vif *vif, struct sk_buff *rskb,
 }
 
 static void
-mt7996_mcu_beacon_mbss(struct sk_buff *rskb, struct sk_buff *skb,
-		       struct ieee80211_vif *vif, struct bss_bcn_content_tlv *bcn,
-		       struct ieee80211_mutable_offsets *offs)
-{
-	struct bss_bcn_mbss_tlv *mbss;
-	const struct element *elem;
-	struct tlv *tlv;
-
-	if (!vif->bss_conf.bssid_indicator)
-		return;
-
-	tlv = mt7996_mcu_add_uni_tlv(rskb, UNI_BSS_INFO_BCN_MBSSID, sizeof(*mbss));
-
-	mbss = (struct bss_bcn_mbss_tlv *)tlv;
-	mbss->offset[0] = cpu_to_le16(offs->tim_offset);
-	mbss->bitmap = cpu_to_le32(1);
-
-	for_each_element_id(elem, WLAN_EID_MULTIPLE_BSSID,
-			    &skb->data[offs->mbssid_off],
-			    skb->len - offs->mbssid_off) {
-		const struct element *sub_elem;
-
-		if (elem->datalen < 2)
-			continue;
-
-		for_each_element(sub_elem, elem->data + 1, elem->datalen - 1) {
-			const struct ieee80211_bssid_index *idx;
-			const u8 *idx_ie;
-
-			/* not a valid BSS profile */
-			if (sub_elem->id || sub_elem->datalen < 4)
-				continue;
-
-			/* Find WLAN_EID_MULTI_BSSID_IDX
-			 * in the merged nontransmitted profile
-			 */
-			idx_ie = cfg80211_find_ie(WLAN_EID_MULTI_BSSID_IDX,
-						  sub_elem->data, sub_elem->datalen);
-			if (!idx_ie || idx_ie[1] < sizeof(*idx))
-				continue;
-
-			idx = (void *)(idx_ie + 2);
-			if (!idx->bssid_index || idx->bssid_index > 31)
-				continue;
-
-			mbss->offset[idx->bssid_index] = cpu_to_le16(idx_ie -
-								     skb->data);
-			mbss->bitmap |= cpu_to_le32(BIT(idx->bssid_index));
-		}
-	}
-}
-
-static void
 mt7996_mcu_beacon_cont(struct mt7996_dev *dev, struct ieee80211_vif *vif,
 		       struct sk_buff *rskb, struct sk_buff *skb,
 		       struct bss_bcn_content_tlv *bcn,
@@ -2438,7 +2385,6 @@ int mt7996_mcu_add_beacon(struct ieee80211_hw *hw,
 		goto out;
 
 	mt7996_mcu_beacon_cont(dev, vif, rskb, skb, bcn, &offs);
-	mt7996_mcu_beacon_mbss(rskb, skb, vif, bcn, &offs);
 	mt7996_mcu_beacon_cntdwn(vif, rskb, skb, &offs);
 out:
 	dev_kfree_skb(skb);

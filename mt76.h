@@ -14,11 +14,7 @@
 #include <linux/usb.h>
 #include <linux/average.h>
 #include <net/mac80211.h>
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,6,0)
 #include <net/page_pool.h>
-#else
-#include <net/page_pool/helpers.h>
-#endif
 #include "util.h"
 #include "testmode.h"
 
@@ -30,6 +26,8 @@
 #define MT_TXQ_FREE_THR		32
 
 #define MT76_TOKEN_FREE_THR	64
+
+#define IEEE80211_MAX_AMPDU_BUF_HE 256
 
 #define MT_QFLAG_WED_RING	GENMASK(1, 0)
 #define MT_QFLAG_WED_TYPE	GENMASK(4, 2)
