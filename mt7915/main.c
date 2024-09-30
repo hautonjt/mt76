@@ -625,7 +625,7 @@ static void mt7915_bss_info_changed(struct ieee80211_hw *hw,
 	    vif->type == NL80211_IFTYPE_STATION)
 		set_bss_info = set_sta = !is_zero_ether_addr(info->bssid);
 	if (changed & BSS_CHANGED_ASSOC)
-		set_bss_info = vif->cfg.assoc;
+		set_bss_info = info->assoc;
 	if (changed & BSS_CHANGED_BEACON_ENABLED &&
 	    vif->type != NL80211_IFTYPE_AP)
 		set_bss_info = set_sta = info->enable_beacon;
@@ -1232,10 +1232,10 @@ static int mt7915_sta_set_txpwr(struct ieee80211_hw *hw,
 {
 	struct mt7915_phy *phy = mt7915_hw_phy(hw);
 	struct mt7915_dev *dev = mt7915_hw_dev(hw);
-	s16 txpower = sta->deflink.txpwr.power;
+	s16 txpower = sta->txpwr.power;
 	int ret;
 
-	if (sta->deflink.txpwr.type == NL80211_TX_POWER_AUTOMATIC)
+	if (sta->txpwr.type == NL80211_TX_POWER_AUTOMATIC)
 		txpower = 0;
 
 	mutex_lock(&dev->mt76.mutex);

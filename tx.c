@@ -60,22 +60,15 @@ mt76_tx_status_unlock(struct mt76_dev *dev, struct sk_buff_head *list)
 			.skb = skb,
 			.info = IEEE80211_SKB_CB(skb),
 		};
-		struct ieee80211_rate_status rs = {};
 		struct mt76_tx_cb *cb = mt76_tx_skb_cb(skb);
 		struct mt76_wcid *wcid;
 
 		wcid = rcu_dereference(dev->wcid[cb->wcid]);
 		if (wcid) {
 			status.sta = wcid_to_sta(wcid);
-			if (status.sta && (wcid->rate.flags || wcid->rate.legacy)) {
-				rs.rate_idx = wcid->rate;
-				status.rates = &rs;
-				status.n_rates = 1;
-			} else {
-				status.n_rates = 0;
-			}
+			if (status.sta)
+				status.rate = &wcid->rate;
 		}
-
 		hw = mt76_tx_status_get_hw(dev, skb);
 		spin_lock_bh(&dev->rx_lock);
 		ieee80211_tx_status_ext(hw, &status);
@@ -270,15 +263,8 @@ void __mt76_tx_complete_skb(struct mt76_dev *dev, u16 wcid_idx, struct sk_buff *
 #endif
 
 	if (cb->pktid < MT_PACKET_ID_FIRST) {
-		struct ieee80211_rate_status rs = {};
-
 		hw = mt76_tx_status_get_hw(dev, skb);
 		status.sta = wcid_to_sta(wcid);
-		if (status.sta && (wcid->rate.flags || wcid->rate.legacy)) {
-			rs.rate_idx = wcid->rate;
-			status.rates = &rs;
-			status.n_rates = 1;
-		}
 		spin_lock_bh(&dev->rx_lock);
 		ieee80211_tx_status_ext(hw, &status);
 		spin_unlock_bh(&dev->rx_lock);

@@ -952,7 +952,7 @@ int mt7921_mcu_uni_bss_ps(struct mt792x_dev *dev, struct ieee80211_vif *vif)
 		.ps = {
 			.tag = cpu_to_le16(UNI_BSS_INFO_PS),
 			.len = cpu_to_le16(sizeof(struct ps_tlv)),
-			.ps_state = vif->cfg.ps ? 2 : 0,
+			.ps_state = vif->bss_conf.ps ? 2 : 0,
 		},
 	};
 
@@ -1016,7 +1016,7 @@ mt7921_mcu_set_bss_pm(struct mt792x_dev *dev, struct ieee80211_vif *vif,
 		u8 pad;
 	} req = {
 		.bss_idx = mvif->mt76.idx,
-		.aid = cpu_to_le16(vif->cfg.aid),
+		.aid = cpu_to_le16(vif->bss_conf.aid),
 		.dtim_period = vif->bss_conf.dtim_period,
 		.bcn_interval = cpu_to_le16(vif->bss_conf.beacon_int),
 	};
@@ -1446,7 +1446,7 @@ int mt7921_mcu_set_rxfilter(struct mt792x_dev *dev, u32 fif,
 				 &data, sizeof(data), false);
 }
 
-int mt7921_mcu_set_rssimonitor(struct mt792x_dev *dev, struct ieee80211_vif *vif)
+int mt7921_mcu_set_rssimonitor(struct mt792x_dev *dev, struct ieee80211_vif *vif, struct ieee80211_bss_conf *info)
 {
 	struct mt792x_vif *mvif = (struct mt792x_vif *)vif->drv_priv;
 	struct {
@@ -1457,7 +1457,7 @@ int mt7921_mcu_set_rssimonitor(struct mt792x_dev *dev, struct ieee80211_vif *vif
 		u16 duration;
 		u8 rsv2[2];
 	} __packed data = {
-		.enable = vif->cfg.assoc,
+		.enable = info->assoc,
 		.cqm_rssi_high = vif->bss_conf.cqm_rssi_thold + vif->bss_conf.cqm_rssi_hyst,
 		.cqm_rssi_low = vif->bss_conf.cqm_rssi_thold - vif->bss_conf.cqm_rssi_hyst,
 		.bss_idx = mvif->mt76.idx,

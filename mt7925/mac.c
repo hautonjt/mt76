@@ -306,11 +306,9 @@ mt7925_mac_fill_rx_rate(struct mt792x_dev *dev,
 	case MT_PHY_TYPE_EHT_TRIG:
 	case MT_PHY_TYPE_EHT_MU:
 		status->nss = nss;
-		status->encoding = RX_ENC_EHT;
-		i &= GENMASK(3, 0);
-
-		if (gi <= NL80211_RATE_INFO_EHT_GI_3_2)
-			status->eht.gi = gi;
+		status->encoding = RX_ENC_HE;
+		bw = min_t(int, bw, IEEE80211_STA_RX_BW_160);
+		i = min_t(int, i & 0xf, 11);
 		break;
 	default:
 		return -EINVAL;
@@ -597,18 +595,8 @@ mt7925_mac_fill_rx(struct mt792x_dev *dev, struct sk_buff *skb)
 
 	mt792x_mac_assoc_rssi(dev, skb);
 
-	if (rxv && !(status->flag & RX_FLAG_8023)) {
-		switch (status->encoding) {
-		case RX_ENC_EHT:
-			mt76_connac3_mac_decode_eht_radiotap(skb, rxv, mode);
-			break;
-		case RX_ENC_HE:
-			mt76_connac3_mac_decode_he_radiotap(skb, rxv, mode);
-			break;
-		default:
-			break;
-		}
-	}
+	if (rxv && mode >= MT_PHY_TYPE_HE_SU && !(status->flag & RX_FLAG_8023))
+		mt76_connac3_mac_decode_he_radiotap(skb, rxv, mode);
 
 	if (!status->wcid || !ieee80211_is_data_qos(fc))
 		return 0;
@@ -837,7 +825,7 @@ static void mt7925_tx_check_aggr(struct ieee80211_sta *sta, __le32 *txwi)
 	u16 fc, tid;
 	u32 val;
 
-	if (!sta || !(sta->deflink.ht_cap.ht_supported || sta->deflink.he_cap.has_he))
+	if (!sta || !(sta->ht_cap.ht_supported || sta->he_cap.has_he))
 		return;
 
 	tid = le32_get_bits(txwi[1], MT_TXD1_TID);

@@ -347,11 +347,9 @@ mt7996_mac_fill_rx_rate(struct mt7996_dev *dev,
 	case MT_PHY_TYPE_EHT_TRIG:
 	case MT_PHY_TYPE_EHT_MU:
 		status->nss = nss;
-		status->encoding = RX_ENC_EHT;
-		i &= GENMASK(3, 0);
-
-		if (gi <= NL80211_RATE_INFO_EHT_GI_3_2)
-			status->eht.gi = gi;
+		status->encoding = RX_ENC_HE;
+		bw = min_t(int, bw, IEEE80211_STA_RX_BW_160);
+		i = min_t(int, i & 0xf, 11);
 		break;
 	default:
 		return -EINVAL;
@@ -1015,7 +1013,7 @@ mt7996_tx_check_aggr(struct ieee80211_sta *sta, struct sk_buff *skb)
 	bool is_8023 = info->flags & IEEE80211_TX_CTL_HW_80211_ENCAP;
 	u16 fc, tid;
 
-	if (!sta || !(sta->deflink.ht_cap.ht_supported || sta->deflink.he_cap.has_he))
+	if (!sta || !(sta->ht_cap.ht_supported || sta->he_cap.has_he))
 		return;
 
 	tid = skb->priority & IEEE80211_QOS_CTL_TID_MASK;
