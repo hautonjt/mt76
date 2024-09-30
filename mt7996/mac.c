@@ -11,6 +11,7 @@
 #include "mac.h"
 #include "mcu.h"
 
+#define dev_is_pci(d) ((d)->bus == &pci_bus_type)
 #define to_rssi(field, rcpi)	((FIELD_GET(field, rcpi) - 220) / 2)
 
 static const struct mt7996_dfs_radar_spec etsi_radar_specs = {
@@ -1209,15 +1210,6 @@ mt7996_mac_add_txs_skb(struct mt7996_dev *dev, struct mt76_wcid *wcid,
 
 			info->status.rates[0].idx = -1;
 		}
-	}
-
-	if (mtk_wed_device_active(&dev->mt76.mmio.wed) && wcid->sta) {
-		struct ieee80211_sta *sta;
-		u8 tid;
-
-		sta = container_of((void *)wcid, struct ieee80211_sta, drv_priv);
-		tid = FIELD_GET(MT_TXS0_TID, txs);
-		ieee80211_refresh_tx_agg_session_timer(sta, tid);
 	}
 
 	txrate = FIELD_GET(MT_TXS0_TX_RATE, txs);

@@ -177,7 +177,6 @@ static void mt7925_init_work(struct work_struct *work)
 		return;
 
 	mt76_set_stream_caps(&dev->mphy, true);
-	mt7925_set_stream_he_eht_caps(&dev->phy);
 
 	ret = mt76_register_device(&dev->mt76, true, mt76_rates,
 				   ARRAY_SIZE(mt76_rates));

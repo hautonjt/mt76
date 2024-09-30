@@ -9,6 +9,7 @@
 #include "mac.h"
 #include "mcu.h"
 
+#define dev_is_pci(d) ((d)->bus == &pci_bus_type)
 #define to_rssi(field, rcpi)	((FIELD_GET(field, rcpi) - 220) / 2)
 
 static const struct mt7915_dfs_radar_spec etsi_radar_specs = {

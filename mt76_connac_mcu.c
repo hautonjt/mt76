@@ -1352,7 +1352,6 @@ EXPORT_SYMBOL_GPL(mt76_connac_get_phy_mode);
 u8 mt76_connac_get_phy_mode_ext(struct mt76_phy *phy, struct ieee80211_vif *vif,
 				enum nl80211_band band)
 {
-	const struct ieee80211_sta_eht_cap *eht_cap;
 	struct ieee80211_supported_band *sband;
 	u8 mode = 0;
 

@@ -1989,7 +1989,6 @@ mt7925_get_phy_mode_ext(struct mt76_phy *phy, struct ieee80211_vif *vif,
 			enum nl80211_band band, struct ieee80211_sta *sta)
 {
 	struct ieee80211_he_6ghz_capa *he_6ghz_capa;
-	const struct ieee80211_sta_eht_cap *eht_cap;
 	__le16 capa = 0;
 	u8 mode = 0;
 
