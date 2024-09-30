@@ -1166,7 +1166,6 @@ int mt7915_init_debugfs(struct mt7915_phy *phy)
 			    &mt7915_sys_recovery_ops);
 	debugfs_create_file("fw_debug_wm", 0600, dir, dev, &fops_fw_debug_wm);
 	debugfs_create_file("fw_debug_wa", 0600, dir, dev, &fops_fw_debug_wa);
-	debugfs_create_file("fw_debug_bin", 0600, dir, dev, &fops_fw_debug_bin);
 	debugfs_create_file("fw_util_wm", 0400, dir, dev,
 			    &mt7915_fw_util_wm_fops);
 	debugfs_create_file("fw_util_wa", 0400, dir, dev,
@@ -1192,62 +1191,6 @@ int mt7915_init_debugfs(struct mt7915_phy *phy)
 		dev->debugfs_dir = dir;
 
 	return 0;
-}
-
-static void
-mt7915_debugfs_write_fwlog(struct mt7915_dev *dev, const void *hdr, int hdrlen,
-			 const void *data, int len)
-{
-	static DEFINE_SPINLOCK(lock);
-	unsigned long flags;
-	void *dest;
-
-	spin_lock_irqsave(&lock, flags);
-	dest = relay_reserve(dev->relay_fwlog, hdrlen + len + 4);
-	if (dest) {
-		*(u32 *)dest = hdrlen + len;
-		dest += 4;
-
-		if (hdrlen) {
-			memcpy(dest, hdr, hdrlen);
-			dest += hdrlen;
-		}
-
-		memcpy(dest, data, len);
-		relay_flush(dev->relay_fwlog);
-	}
-	spin_unlock_irqrestore(&lock, flags);
-}
-
-void mt7915_debugfs_rx_fw_monitor(struct mt7915_dev *dev, const void *data, int len)
-{
-	struct {
-		__le32 magic;
-		__le32 timestamp;
-		__le16 msg_type;
-		__le16 len;
-	} hdr = {
-		.magic = cpu_to_le32(FW_BIN_LOG_MAGIC),
-		.msg_type = cpu_to_le16(PKT_TYPE_RX_FW_MONITOR),
-	};
-
-	if (!dev->relay_fwlog)
-		return;
-
-	hdr.timestamp = cpu_to_le32(mt76_rr(dev, MT_LPON_FRCR(0)));
-	hdr.len = *(__le16 *)data;
-	mt7915_debugfs_write_fwlog(dev, &hdr, sizeof(hdr), data, len);
-}
-
-bool mt7915_debugfs_rx_log(struct mt7915_dev *dev, const void *data, int len)
-{
-	if (get_unaligned_le32(data) != FW_BIN_LOG_MAGIC)
-		return false;
-
-	if (dev->relay_fwlog)
-		mt7915_debugfs_write_fwlog(dev, NULL, 0, data, len);
-
-	return true;
 }
 
 #ifdef CONFIG_MAC80211_DEBUGFS

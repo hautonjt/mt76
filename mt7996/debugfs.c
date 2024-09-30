@@ -743,7 +743,6 @@ int mt7996_init_debugfs(struct mt7996_phy *phy)
 			    &mt7996_sys_recovery_ops);
 	debugfs_create_file("fw_debug_wm", 0600, dir, dev, &fops_fw_debug_wm);
 	debugfs_create_file("fw_debug_wa", 0600, dir, dev, &fops_fw_debug_wa);
-	debugfs_create_file("fw_debug_bin", 0600, dir, dev, &fops_fw_debug_bin);
 	/* TODO: wm fw cpu utilization */
 	debugfs_create_file("fw_util_wa", 0400, dir, dev,
 			    &mt7996_fw_util_wa_fops);
