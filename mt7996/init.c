@@ -350,7 +350,6 @@ static void
 mt7996_init_wiphy(struct ieee80211_hw *hw, struct mtk_wed_device *wed)
 {
 	struct mt7996_phy *phy = mt7996_hw_phy(hw);
-	struct mt76_dev *mdev = &phy->dev->mt76;
 	struct wiphy *wiphy = hw->wiphy;
 	u16 max_subframes = IEEE80211_MAX_AMPDU_BUF_HE;
 
@@ -386,12 +385,6 @@ mt7996_init_wiphy(struct ieee80211_hw *hw, struct mtk_wed_device *wed)
 	wiphy_ext_feature_set(wiphy, NL80211_EXT_FEATURE_ACK_SIGNAL_SUPPORT);
 	wiphy_ext_feature_set(wiphy, NL80211_EXT_FEATURE_CAN_REPLACE_PTK0);
 	wiphy_ext_feature_set(wiphy, NL80211_EXT_FEATURE_MU_MIMO_AIR_SNIFFER);
-
-	if (!mdev->dev->of_node ||
-	    !of_property_read_bool(mdev->dev->of_node,
-				   "mediatek,disable-radar-background"))
-		wiphy_ext_feature_set(wiphy,
-				      NL80211_EXT_FEATURE_RADAR_BACKGROUND);
 
 	ieee80211_hw_set(hw, HAS_RATE_CONTROL);
 	ieee80211_hw_set(hw, SUPPORTS_TX_ENCAP_OFFLOAD);
@@ -943,8 +936,8 @@ mt7996_init_he_caps(struct mt7996_phy *phy, enum nl80211_band band,
 		mt76_connac_gen_ppe_thresh(he_cap->ppe_thres, nss);
 	} else {
 		he_cap_elem->phy_cap_info[9] |=
-			u8_encode_bits(IEEE80211_HE_PHY_CAP9_NOMINAL_PKT_PADDING_16US,
-				       IEEE80211_HE_PHY_CAP9_NOMINAL_PKT_PADDING_MASK);
+			u8_encode_bits(IEEE80211_HE_PHY_CAP9_NOMIMAL_PKT_PADDING_16US,
+					       IEEE80211_HE_PHY_CAP9_NOMIMAL_PKT_PADDING_MASK);
 	}
 
 	if (band == NL80211_BAND_6GHZ) {

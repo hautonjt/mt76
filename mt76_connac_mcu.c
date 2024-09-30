@@ -787,7 +787,7 @@ mt76_connac_mcu_sta_he_tlv_v2(struct sk_buff *skb, struct ieee80211_sta *sta)
 		break;
 	}
 
-	he->pkt_ext = IEEE80211_HE_PHY_CAP9_NOMINAL_PKT_PADDING_16US;
+	he->pkt_ext = IEEE80211_HE_PHY_CAP9_NOMIMAL_PKT_PADDING_16US;
 }
 EXPORT_SYMBOL_GPL(mt76_connac_mcu_sta_he_tlv_v2);
 

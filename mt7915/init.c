@@ -347,7 +347,6 @@ mt7915_init_wiphy(struct mt7915_phy *phy)
 {
 	struct mt76_phy *mphy = phy->mt76;
 	struct ieee80211_hw *hw = mphy->hw;
-	struct mt76_dev *mdev = &phy->dev->mt76;
 	struct wiphy *wiphy = hw->wiphy;
 	struct mt7915_dev *dev = phy->dev;
 
@@ -355,9 +354,6 @@ mt7915_init_wiphy(struct mt7915_phy *phy)
 	hw->max_rx_aggregation_subframes = IEEE80211_MAX_AMPDU_BUF_HE;
 	hw->max_tx_aggregation_subframes = IEEE80211_MAX_AMPDU_BUF_HE;
 	hw->netdev_features = NETIF_F_RXCSUM;
-
-	if (mtk_wed_device_active(&mdev->mmio.wed))
-		hw->netdev_features |= NETIF_F_HW_TC;
 
 	hw->radiotap_timestamp.units_pos =
 		IEEE80211_RADIOTAP_TIMESTAMP_UNIT_US;
@@ -385,12 +381,6 @@ mt7915_init_wiphy(struct mt7915_phy *phy)
 
 	if (!is_mt7915(&dev->mt76))
 		wiphy_ext_feature_set(wiphy, NL80211_EXT_FEATURE_STA_TX_PWR);
-
-	if (!mdev->dev->of_node ||
-	    !of_property_read_bool(mdev->dev->of_node,
-				   "mediatek,disable-radar-background"))
-		wiphy_ext_feature_set(wiphy,
-				      NL80211_EXT_FEATURE_RADAR_BACKGROUND);
 
 	ieee80211_hw_set(hw, HAS_RATE_CONTROL);
 	ieee80211_hw_set(hw, SUPPORTS_TX_ENCAP_OFFLOAD);
@@ -1116,8 +1106,8 @@ mt7915_init_he_caps(struct mt7915_phy *phy, enum nl80211_band band,
 			mt76_connac_gen_ppe_thresh(he_cap->ppe_thres, nss);
 		} else {
 			he_cap_elem->phy_cap_info[9] |=
-				u8_encode_bits(IEEE80211_HE_PHY_CAP9_NOMINAL_PKT_PADDING_16US,
-					       IEEE80211_HE_PHY_CAP9_NOMINAL_PKT_PADDING_MASK);
+				u8_encode_bits(IEEE80211_HE_PHY_CAP9_NOMIMAL_PKT_PADDING_16US,
+					       IEEE80211_HE_PHY_CAP9_NOMIMAL_PKT_PADDING_MASK);
 		}
 
 		if (band == NL80211_BAND_6GHZ) {
@@ -1151,7 +1141,8 @@ void mt7915_set_stream_he_caps(struct mt7915_phy *phy)
 		n = mt7915_init_he_caps(phy, NL80211_BAND_2GHZ, data);
 
 		band = &phy->mt76->sband_2g.sband;
-		_ieee80211_set_sband_iftype_data(band, data, n);
+		band->iftype_data = data;
+		band->n_iftype_data = n;
 	}
 
 	if (phy->mt76->cap.has_5ghz) {
@@ -1159,7 +1150,8 @@ void mt7915_set_stream_he_caps(struct mt7915_phy *phy)
 		n = mt7915_init_he_caps(phy, NL80211_BAND_5GHZ, data);
 
 		band = &phy->mt76->sband_5g.sband;
-		_ieee80211_set_sband_iftype_data(band, data, n);
+		band->iftype_data = data;
+		band->n_iftype_data = n;
 	}
 
 	if (phy->mt76->cap.has_6ghz) {
@@ -1167,7 +1159,8 @@ void mt7915_set_stream_he_caps(struct mt7915_phy *phy)
 		n = mt7915_init_he_caps(phy, NL80211_BAND_6GHZ, data);
 
 		band = &phy->mt76->sband_6g.sband;
-		_ieee80211_set_sband_iftype_data(band, data, n);
+		band->iftype_data = data;
+		band->n_iftype_data = n;
 	}
 }
 

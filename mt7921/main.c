@@ -150,8 +150,8 @@ mt7921_init_he_caps(struct mt792x_phy *phy, enum nl80211_band band,
 			mt76_connac_gen_ppe_thresh(he_cap->ppe_thres, nss);
 		} else {
 			he_cap_elem->phy_cap_info[9] |=
-				u8_encode_bits(IEEE80211_HE_PHY_CAP9_NOMINAL_PKT_PADDING_16US,
-					       IEEE80211_HE_PHY_CAP9_NOMINAL_PKT_PADDING_MASK);
+				u8_encode_bits(IEEE80211_HE_PHY_CAP9_NOMIMAL_PKT_PADDING_16US,
+					       IEEE80211_HE_PHY_CAP9_NOMIMAL_PKT_PADDING_MASK);
 		}
 
 		if (band == NL80211_BAND_6GHZ) {
@@ -196,7 +196,8 @@ void mt7921_set_stream_he_caps(struct mt792x_phy *phy)
 		n = mt7921_init_he_caps(phy, NL80211_BAND_2GHZ, data);
 
 		band = &phy->mt76->sband_2g.sband;
-		_ieee80211_set_sband_iftype_data(band, data, n);
+		band->iftype_data = data;
+		band->n_iftype_data = n;
 	}
 
 	if (phy->mt76->cap.has_5ghz) {
@@ -204,14 +205,16 @@ void mt7921_set_stream_he_caps(struct mt792x_phy *phy)
 		n = mt7921_init_he_caps(phy, NL80211_BAND_5GHZ, data);
 
 		band = &phy->mt76->sband_5g.sband;
-		_ieee80211_set_sband_iftype_data(band, data, n);
+		band->iftype_data = data;
+		band->n_iftype_data = n;
 
 		if (phy->mt76->cap.has_6ghz) {
 			data = phy->iftype[NL80211_BAND_6GHZ];
 			n = mt7921_init_he_caps(phy, NL80211_BAND_6GHZ, data);
 
 			band = &phy->mt76->sband_6g.sband;
-			_ieee80211_set_sband_iftype_data(band, data, n);
+			band->iftype_data = data;
+		band->n_iftype_data = n;
 		}
 	}
 }
