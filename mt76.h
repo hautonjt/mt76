@@ -49,6 +49,9 @@
 #define MT_WED_RRO_Q_MSDU_PG(_n)	__MT_WED_RRO_Q(MT76_WED_RRO_Q_MSDU_PG, _n)
 #define MT_WED_RRO_Q_IND	__MT_WED_RRO_Q(MT76_WED_RRO_Q_IND, 0)
 
+struct mtk_wed_device {
+};
+
 static inline bool mtk_wed_device_active(struct mtk_wed_device *dev)
 {
 	return false;
@@ -95,9 +98,6 @@ enum mt76_wed_type {
 	MT76_WED_RRO_Q_DATA,
 	MT76_WED_RRO_Q_MSDU_PG,
 	MT76_WED_RRO_Q_IND,
-};
-
-struct mtk_wed_device {
 };
 
 struct mt76_bus_ops {
