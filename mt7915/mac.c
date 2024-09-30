@@ -3,6 +3,7 @@
 
 #include <linux/etherdevice.h>
 #include <linux/timekeeping.h>
+#include <linux/pci.h>
 #include "coredump.h"
 #include "mt7915.h"
 #include "../dma.h"
@@ -11,6 +12,8 @@
 
 #define dev_is_pci(d) ((d)->bus == &pci_bus_type)
 #define to_rssi(field, rcpi)	((FIELD_GET(field, rcpi) - 220) / 2)
+
+extern const struct bus_type pci_bus_type;
 
 static const struct mt7915_dfs_radar_spec etsi_radar_specs = {
 	.pulse_th = { 110, -10, -80, 40, 5200, 128, 5200 },
