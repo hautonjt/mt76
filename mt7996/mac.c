@@ -5,6 +5,7 @@
 
 #include <linux/etherdevice.h>
 #include <linux/timekeeping.h>
+#include <linux/pci.h>
 #include "coredump.h"
 #include "mt7996.h"
 #include "../dma.h"
@@ -1384,9 +1385,6 @@ bool mt7996_rx_check(struct mt76_dev *mdev, void *data, int len)
 		for (rxd += 4; rxd + 8 <= end; rxd += 8)
 			mt7996_mac_add_txs(dev, rxd);
 		return false;
-	case PKT_TYPE_RX_FW_MONITOR:
-		mt7996_debugfs_rx_fw_monitor(dev, data, len);
-		return false;
 	default:
 		return true;
 	}
@@ -1426,10 +1424,6 @@ void mt7996_queue_rx_skb(struct mt76_dev *mdev, enum mt76_rxq_id q,
 	case PKT_TYPE_TXS:
 		for (rxd += 4; rxd + 8 <= end; rxd += 8)
 			mt7996_mac_add_txs(dev, rxd);
-		dev_kfree_skb(skb);
-		break;
-	case PKT_TYPE_RX_FW_MONITOR:
-		mt7996_debugfs_rx_fw_monitor(dev, skb->data, skb->len);
 		dev_kfree_skb(skb);
 		break;
 	case PKT_TYPE_NORMAL:

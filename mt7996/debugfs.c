@@ -373,65 +373,6 @@ mt7996_fw_debug_wa_get(void *data, u64 *val)
 DEFINE_DEBUGFS_ATTRIBUTE(fops_fw_debug_wa, mt7996_fw_debug_wa_get,
 			 mt7996_fw_debug_wa_set, "%lld\n");
 
-static struct dentry *
-create_buf_file_cb(const char *filename, struct dentry *parent, umode_t mode,
-		   struct rchan_buf *buf, int *is_global)
-{
-	struct dentry *f;
-
-	f = debugfs_create_file("fwlog_data", mode, parent, buf,
-				&relay_file_operations);
-	if (IS_ERR(f))
-		return NULL;
-
-	*is_global = 1;
-
-	return f;
-}
-
-static int
-remove_buf_file_cb(struct dentry *f)
-{
-	debugfs_remove(f);
-
-	return 0;
-}
-
-static int
-mt7996_fw_debug_bin_set(void *data, u64 val)
-{
-	static struct rchan_callbacks relay_cb = {
-		.create_buf_file = create_buf_file_cb,
-		.remove_buf_file = remove_buf_file_cb,
-	};
-	struct mt7996_dev *dev = data;
-
-	if (!dev->relay_fwlog)
-		dev->relay_fwlog = relay_open("fwlog_data", dev->debugfs_dir,
-					      1500, 512, &relay_cb, NULL);
-	if (!dev->relay_fwlog)
-		return -ENOMEM;
-
-	dev->fw_debug_bin = val;
-
-	relay_reset(dev->relay_fwlog);
-
-	return mt7996_fw_debug_wm_set(dev, dev->fw_debug_wm);
-}
-
-static int
-mt7996_fw_debug_bin_get(void *data, u64 *val)
-{
-	struct mt7996_dev *dev = data;
-
-	*val = dev->fw_debug_bin;
-
-	return 0;
-}
-
-DEFINE_DEBUGFS_ATTRIBUTE(fops_fw_debug_bin, mt7996_fw_debug_bin_get,
-			 mt7996_fw_debug_bin_set, "%lld\n");
-
 static int
 mt7996_fw_util_wa_show(struct seq_file *file, void *data)
 {
@@ -821,71 +762,7 @@ int mt7996_init_debugfs(struct mt7996_phy *phy)
 					    mt7996_rdd_monitor);
 	}
 
-	if (phy == &dev->phy)
-		dev->debugfs_dir = dir;
-
 	return 0;
-}
-
-static void
-mt7996_debugfs_write_fwlog(struct mt7996_dev *dev, const void *hdr, int hdrlen,
-			   const void *data, int len)
-{
-	static DEFINE_SPINLOCK(lock);
-	unsigned long flags;
-	void *dest;
-
-	spin_lock_irqsave(&lock, flags);
-	dest = relay_reserve(dev->relay_fwlog, hdrlen + len + 4);
-	if (dest) {
-		*(u32 *)dest = hdrlen + len;
-		dest += 4;
-
-		if (hdrlen) {
-			memcpy(dest, hdr, hdrlen);
-			dest += hdrlen;
-		}
-
-		memcpy(dest, data, len);
-		relay_flush(dev->relay_fwlog);
-	}
-	spin_unlock_irqrestore(&lock, flags);
-}
-
-void mt7996_debugfs_rx_fw_monitor(struct mt7996_dev *dev, const void *data, int len)
-{
-	struct {
-		__le32 magic;
-		u8 version;
-		u8 _rsv;
-		__le16 serial_id;
-		__le32 timestamp;
-		__le16 msg_type;
-		__le16 len;
-	} hdr = {
-		.version = 0x1,
-		.magic = cpu_to_le32(FW_BIN_LOG_MAGIC),
-		.msg_type = cpu_to_le16(PKT_TYPE_RX_FW_MONITOR),
-	};
-
-	if (!dev->relay_fwlog)
-		return;
-
-	hdr.serial_id = cpu_to_le16(dev->fw_debug_seq++);
-	hdr.timestamp = cpu_to_le32(mt76_rr(dev, MT_LPON_FRCR(0)));
-	hdr.len = *(__le16 *)data;
-	mt7996_debugfs_write_fwlog(dev, &hdr, sizeof(hdr), data, len);
-}
-
-bool mt7996_debugfs_rx_log(struct mt7996_dev *dev, const void *data, int len)
-{
-	if (get_unaligned_le32(data) != FW_BIN_LOG_MAGIC)
-		return false;
-
-	if (dev->relay_fwlog)
-		mt7996_debugfs_write_fwlog(dev, NULL, 0, data, len);
-
-	return true;
 }
 
 #ifdef CONFIG_MAC80211_DEBUGFS

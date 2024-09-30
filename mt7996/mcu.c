@@ -368,9 +368,6 @@ mt7996_mcu_rx_log_message(struct mt7996_dev *dev, struct sk_buff *skb)
 out:
 	switch (rxd->s2d_index) {
 	case 0:
-		if (mt7996_debugfs_rx_log(dev, data, len))
-			return;
-
 		type = "WM";
 		break;
 	case 2:

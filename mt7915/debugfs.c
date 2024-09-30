@@ -582,65 +582,6 @@ mt7915_fw_debug_wa_get(void *data, u64 *val)
 DEFINE_DEBUGFS_ATTRIBUTE(fops_fw_debug_wa, mt7915_fw_debug_wa_get,
 			 mt7915_fw_debug_wa_set, "%lld\n");
 
-static struct dentry *
-create_buf_file_cb(const char *filename, struct dentry *parent, umode_t mode,
-		   struct rchan_buf *buf, int *is_global)
-{
-	struct dentry *f;
-
-	f = debugfs_create_file("fwlog_data", mode, parent, buf,
-				&relay_file_operations);
-	if (IS_ERR(f))
-		return NULL;
-
-	*is_global = 1;
-
-	return f;
-}
-
-static int
-remove_buf_file_cb(struct dentry *f)
-{
-	debugfs_remove(f);
-
-	return 0;
-}
-
-static int
-mt7915_fw_debug_bin_set(void *data, u64 val)
-{
-	static struct rchan_callbacks relay_cb = {
-		.create_buf_file = create_buf_file_cb,
-		.remove_buf_file = remove_buf_file_cb,
-	};
-	struct mt7915_dev *dev = data;
-
-	if (!dev->relay_fwlog)
-		dev->relay_fwlog = relay_open("fwlog_data", dev->debugfs_dir,
-					    1500, 512, &relay_cb, NULL);
-	if (!dev->relay_fwlog)
-		return -ENOMEM;
-
-	dev->fw.debug_bin = val;
-
-	relay_reset(dev->relay_fwlog);
-
-	return mt7915_fw_debug_wm_set(dev, dev->fw.debug_wm);
-}
-
-static int
-mt7915_fw_debug_bin_get(void *data, u64 *val)
-{
-	struct mt7915_dev *dev = data;
-
-	*val = dev->fw.debug_bin;
-
-	return 0;
-}
-
-DEFINE_DEBUGFS_ATTRIBUTE(fops_fw_debug_bin, mt7915_fw_debug_bin_get,
-			 mt7915_fw_debug_bin_set, "%lld\n");
-
 static int
 mt7915_fw_util_wm_show(struct seq_file *file, void *data)
 {
