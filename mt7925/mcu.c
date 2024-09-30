@@ -1855,7 +1855,7 @@ mt7925_mcu_uni_add_beacon_offload(struct mt792x_dev *dev,
 	if (!enable)
 		return -EOPNOTSUPP;
 
-	skb = ieee80211_beacon_get_template(mt76_hw(dev), vif, &offs, 0);
+	skb = ieee80211_beacon_get_template(mt76_hw(dev), vif, &offs);
 	if (!skb)
 		return -EINVAL;
 

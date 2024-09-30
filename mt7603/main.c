@@ -298,7 +298,7 @@ mt7603_configure_filter(struct ieee80211_hw *hw, unsigned int changed_flags,
 
 static void
 mt7603_bss_info_changed(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
-			struct ieee80211_bss_conf *info, u64 changed)
+			struct ieee80211_bss_conf *info, u32 changed)
 {
 	struct mt7603_dev *dev = hw->priv;
 	struct mt7603_vif *mvif = (struct mt7603_vif *)vif->drv_priv;
@@ -531,7 +531,7 @@ mt7603_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 
 static int
 mt7603_conf_tx(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
-	       unsigned int link_id, u16 queue,
+	       u16 queue,
 	       const struct ieee80211_tx_queue_params *params)
 {
 	struct mt7603_dev *dev = hw->priv;
@@ -701,10 +701,6 @@ static void mt7603_tx(struct ieee80211_hw *hw,
 }
 
 const struct ieee80211_ops mt7603_ops = {
-	.add_chanctx = ieee80211_emulate_add_chanctx,
-	.remove_chanctx = ieee80211_emulate_remove_chanctx,
-	.change_chanctx = ieee80211_emulate_change_chanctx,
-	.switch_vif_chanctx = ieee80211_emulate_switch_vif_chanctx,
 	.tx = mt7603_tx,
 	.start = mt7603_start,
 	.stop = mt7603_stop,

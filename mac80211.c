@@ -1590,7 +1590,7 @@ __mt76_csa_check(void *priv, u8 *mac, struct ieee80211_vif *vif)
 {
 	struct mt76_dev *dev = priv;
 
-	if (!vif->bss_conf.csa_active)
+	if (!vif->csa_active)
 		return;
 
 	dev->csa_complete |= ieee80211_beacon_cntdwn_is_complete(vif);

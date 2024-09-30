@@ -269,7 +269,7 @@ void mt792x_remove_interface(struct ieee80211_hw *hw,
 void mt792x_tx(struct ieee80211_hw *hw, struct ieee80211_tx_control *control,
 	       struct sk_buff *skb);
 int mt792x_conf_tx(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
-		   unsigned int link_id, u16 queue,
+		   u16 queue,
 		   const struct ieee80211_tx_queue_params *params);
 int mt792x_get_stats(struct ieee80211_hw *hw,
 		     struct ieee80211_low_level_stats *stats);

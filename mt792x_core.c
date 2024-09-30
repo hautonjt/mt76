@@ -142,7 +142,7 @@ void mt792x_remove_interface(struct ieee80211_hw *hw,
 EXPORT_SYMBOL_GPL(mt792x_remove_interface);
 
 int mt792x_conf_tx(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
-		   unsigned int link_id, u16 queue,
+		   u16 queue,
 		   const struct ieee80211_tx_queue_params *params)
 {
 	struct mt792x_vif *mvif = (struct mt792x_vif *)vif->drv_priv;
@@ -682,10 +682,10 @@ mt792x_get_mac80211_ops(struct device *dev,
 	if (!(*fw_features & MT792x_FW_CAP_CNM)) {
 		ops->remain_on_channel = NULL;
 		ops->cancel_remain_on_channel = NULL;
-		ops->add_chanctx = ieee80211_emulate_add_chanctx;
-		ops->remove_chanctx = ieee80211_emulate_remove_chanctx;
-		ops->change_chanctx = ieee80211_emulate_change_chanctx;
-		ops->switch_vif_chanctx = ieee80211_emulate_switch_vif_chanctx;
+		ops->add_chanctx = NULL;
+		ops->remove_chanctx = NULL;
+		ops->change_chanctx = NULL;
+		ops->switch_vif_chanctx = NULL;
 		ops->assign_vif_chanctx = NULL;
 		ops->unassign_vif_chanctx = NULL;
 		ops->mgd_prepare_tx = NULL;

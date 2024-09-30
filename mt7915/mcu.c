@@ -226,7 +226,7 @@ int mt7915_mcu_wa_cmd(struct mt7915_dev *dev, int cmd, u32 a1, u32 a2, u32 a3)
 static void
 mt7915_mcu_csa_finish(void *priv, u8 *mac, struct ieee80211_vif *vif)
 {
-	if (!vif->bss_conf.csa_active || vif->type == NL80211_IFTYPE_STATION)
+	if (!vif->csa_active || vif->type == NL80211_IFTYPE_STATION)
 		return;
 
 	ieee80211_csa_finish(vif);
@@ -1777,7 +1777,7 @@ mt7915_mcu_beacon_cntdwn(struct ieee80211_vif *vif, struct sk_buff *rskb,
 	if (!offs->cntdwn_counter_offs[0])
 		return;
 
-	sub_tag = vif->bss_conf.csa_active ? BSS_INFO_BCN_CSA : BSS_INFO_BCN_BCC;
+	sub_tag = vif->csa_active ? BSS_INFO_BCN_CSA : BSS_INFO_BCN_BCC;
 	tlv = mt7915_mcu_add_nested_subtlv(rskb, sub_tag, sizeof(*info),
 					   &bcn->sub_ntlv, &bcn->len);
 	info = (struct bss_info_bcn_cntdwn *)tlv;
@@ -1862,7 +1862,7 @@ mt7915_mcu_beacon_cont(struct mt7915_dev *dev, struct ieee80211_vif *vif,
 	if (offs->cntdwn_counter_offs[0]) {
 		u16 offset = offs->cntdwn_counter_offs[0];
 
-		if (vif->bss_conf.csa_active)
+		if (vif->csa_active)
 			cont->csa_ofs = cpu_to_le16(offset - 4);
 		if (vif->bss_conf.color_change_active)
 			cont->bcc_ofs = cpu_to_le16(offset - 3);
@@ -1987,7 +1987,7 @@ int mt7915_mcu_add_beacon(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 	if (!en)
 		goto out;
 
-	skb = ieee80211_beacon_get_template(hw, vif, &offs, 0);
+	skb = ieee80211_beacon_get_template(hw, vif, &offs);
 	if (!skb) {
 		dev_kfree_skb(rskb);
 		return -EINVAL;

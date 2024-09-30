@@ -852,7 +852,7 @@ mt76_dma_rx_process(struct mt76_dev *dev, struct mt76_queue *q, int budget)
 		    !(dev->drv->rx_check(dev, data, len)))
 			goto free_frag;
 
-		skb = napi_build_skb(data, q->buf_size);
+		skb = build_skb(data, q->buf_size);
 		if (!skb)
 			goto free_frag;
 
@@ -919,7 +919,7 @@ mt76_dma_init(struct mt76_dev *dev,
 	init_completion(&dev->mmio.wed_reset_complete);
 
 	mt76_for_each_q_rx(dev, i) {
-		netif_napi_add(&dev->napi_dev, &dev->napi[i], poll);
+		netif_napi_add(&dev->napi_dev, &dev->napi[i], poll, 64);
 		mt76_dma_rx_fill(dev, &dev->q_rx[i]);
 		napi_enable(&dev->napi[i]);
 	}

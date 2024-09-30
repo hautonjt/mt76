@@ -338,7 +338,7 @@ int mt7996_mcu_wa_cmd(struct mt7996_dev *dev, int cmd, u32 a1, u32 a2, u32 a3)
 static void
 mt7996_mcu_csa_finish(void *priv, u8 *mac, struct ieee80211_vif *vif)
 {
-	if (!vif->bss_conf.csa_active || vif->type == NL80211_IFTYPE_STATION)
+	if (!vif->csa_active || vif->type == NL80211_IFTYPE_STATION)
 		return;
 
 	ieee80211_csa_finish(vif);
@@ -2304,7 +2304,7 @@ mt7996_mcu_beacon_cntdwn(struct ieee80211_vif *vif, struct sk_buff *rskb,
 	if (!offs->cntdwn_counter_offs[0])
 		return;
 
-	tag = vif->bss_conf.csa_active ? UNI_BSS_INFO_BCN_CSA : UNI_BSS_INFO_BCN_BCC;
+	tag = vif->csa_active ? UNI_BSS_INFO_BCN_CSA : UNI_BSS_INFO_BCN_BCC;
 
 	tlv = mt7996_mcu_add_uni_tlv(rskb, tag, sizeof(*info));
 
@@ -2380,7 +2380,7 @@ mt7996_mcu_beacon_cont(struct mt7996_dev *dev, struct ieee80211_vif *vif,
 	if (offs->cntdwn_counter_offs[0]) {
 		u16 offset = offs->cntdwn_counter_offs[0];
 
-		if (vif->bss_conf.csa_active)
+		if (vif->csa_active)
 			bcn->csa_ie_pos = cpu_to_le16(offset - 4);
 		if (vif->bss_conf.color_change_active)
 			bcn->bcc_ie_pos = cpu_to_le16(offset - 3);
@@ -2414,7 +2414,7 @@ int mt7996_mcu_add_beacon(struct ieee80211_hw *hw,
 	if (IS_ERR(rskb))
 		return PTR_ERR(rskb);
 
-	skb = ieee80211_beacon_get_template(hw, vif, &offs, 0);
+	skb = ieee80211_beacon_get_template(hw, vif, &offs);
 	if (!skb) {
 		dev_kfree_skb(rskb);
 		return -EINVAL;

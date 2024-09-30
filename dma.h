@@ -115,4 +115,11 @@ mt76_dma_should_drop_buf(bool *drop, u32 ctrl, u32 buf1, u32 info)
 	}
 }
 
+static inline void netif_napi_add_tx(struct net_device *dev,
+				     struct napi_struct *napi,
+				     int (*poll)(struct napi_struct *, int))
+{
+	netif_tx_napi_add(dev, napi, poll, NAPI_POLL_WEIGHT);
+}
+
 #endif

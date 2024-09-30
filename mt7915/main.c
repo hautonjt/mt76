@@ -508,7 +508,7 @@ static int mt7915_config(struct ieee80211_hw *hw, u32 changed)
 
 static int
 mt7915_conf_tx(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
-	       unsigned int link_id, u16 queue,
+	       u16 queue,
 	       const struct ieee80211_tx_queue_params *params)
 {
 	struct mt7915_vif *mvif = (struct mt7915_vif *)vif->drv_priv;
@@ -609,7 +609,7 @@ mt7915_update_bss_color(struct ieee80211_hw *hw,
 static void mt7915_bss_info_changed(struct ieee80211_hw *hw,
 				    struct ieee80211_vif *vif,
 				    struct ieee80211_bss_conf *info,
-				    u64 changed)
+				    u32 changed)
 {
 	struct mt7915_phy *phy = mt7915_hw_phy(hw);
 	struct mt7915_dev *dev = mt7915_hw_dev(hw);
@@ -1627,10 +1627,6 @@ out:
 }
 
 const struct ieee80211_ops mt7915_ops = {
-	.add_chanctx = ieee80211_emulate_add_chanctx,
-	.remove_chanctx = ieee80211_emulate_remove_chanctx,
-	.change_chanctx = ieee80211_emulate_change_chanctx,
-	.switch_vif_chanctx = ieee80211_emulate_switch_vif_chanctx,
 	.tx = mt7915_tx,
 	.start = mt7915_start,
 	.stop = mt7915_stop,
