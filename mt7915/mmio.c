@@ -15,7 +15,7 @@
 
 #define dev_is_pci(d) ((d)->bus == &pci_bus_type)
 
-extern const struct bus_type pci_bus_type;
+extern struct bus_type pci_bus_type;
 
 static const u32 mt7915_reg[] = {
 	[INT_SOURCE_CSR]		= 0xd7010,

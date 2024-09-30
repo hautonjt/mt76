@@ -11,12 +11,10 @@
 #include "mac.h"
 #include "mcu.h"
 
-extern const struct bus_type pci_bus_type;
-
 #define dev_is_pci(d) ((d)->bus == &pci_bus_type)
 #define to_rssi(field, rcpi)	((FIELD_GET(field, rcpi) - 220) / 2)
 
-extern const struct bus_type pci_bus_type;
+extern struct bus_type pci_bus_type;
 
 static const struct mt7996_dfs_radar_spec etsi_radar_specs = {
 	.pulse_th = { 110, -10, -80, 40, 5200, 128, 5200 },

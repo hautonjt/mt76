@@ -16,7 +16,7 @@
 
 #define dev_is_pci(d) ((d)->bus == &pci_bus_type)
 
-extern const struct bus_type pci_bus_type;
+extern struct bus_type pci_bus_type;
 
 static const struct __base mt7996_reg_base[] = {
 	[WF_AGG_BASE]		= { { 0x820e2000, 0x820f2000, 0x830e2000 } },
